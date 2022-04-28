@@ -1,0 +1,54 @@
+<launch>
+    <param name="/use_sim_time" value="true" /> 
+    <node pkg="ndt_imu_localization" name="pointcloud_filter_node" type="pointcloud_filter_node"  >
+        <!-- pointcloud topic -->
+        <!-- <param name="point_cloud_topic" value="/velodyne_points" /> -->
+        <param name="point_cloud_topic" value="/os_cloud_node/points" />
+        <param name="lidar_frame" type="string" value="my_lidar_link" /> 
+        <!-- <param name="point_cloud_topic" value="/kitti/velo/pointcloud" /> -->
+
+        <!-- <param name="point_cloud_topic" value="/X1/points" />
+        <param name="lidar_frame" type="string" value="my_X1" /> -->
+        <!-- downsample filter param -->
+        <param name="filter_downsample" value="true" />
+        <param name="downsample_resolution" value="0.5" />
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="lidar_filter_broadcaster" args="0 0 0 0 0 0 /lidar_link /my_lidar_link 10" />
+    <node pkg="tf" type="static_transform_publisher" name="world_map_broadcaster" args="0 0 0 0 0 0 /world /map 10" />
+    <node pkg="tf" type="static_transform_publisher" name="lidar_base_broadcaster" args="0 0 0 0 0 0 /lidar_link /base_link 10" />
+    <node pkg="tf" type="static_transform_publisher" name="lidar_velodyne_broadcaster" args="0 0 0 0 0 0 /lidar_link /velodyne 10" />
+
+    <node pkg="ndt_imu_localization" name="ndt_matching_node"  type="ndt_matching_node" output="screen">
+        <param name="score_threshold" type = "double" value="0.1" />
+        <param name="imu_enable" type = "bool" value="false" />
+
+        <!-- <param name="map_path"    type="string" value="subt" />
+        <param name="world_frame" type="string" value="simple_cave_02" />
+        <param name="lidar_frame" type="string" value="my_X1" />
+        <param name="imu_frame"   type="string" value="X1/base_link/imu_sensor" /> -->
+
+        <param name="map_path"    type="string" value="xiangshan" />
+        <param name="world_frame" type="string" value="world" />
+        <param name="lidar_frame" type="string" value="lidar_link" />
+        <param name="imu_frame"   type="string" value="imu_link" />
+
+        <param name="downsample_map"   type="bool" value="false" />
+        <param name="save_downsample_map"   type="bool" value="false" />
+
+        <!-- <param name="map_path"    type="string" value="kitti" />
+        <param name="world_frame" type="string" value="world" />
+        <param name="lidar_frame" type="string" value="my_lidar_link" />
+        <param name="imu_frame"   type="string" value="imu_link" /> -->
+    </node>
+
+    <rosparam file="$(find ndt_imu_localization)/config/params.yaml" command="load" />
+    <node pkg="ndt_imu_localization" type="imu_preintegration"   name="imu_preintegration"    output="screen" />
+
+    <!-- <node pkg="ndt_imu_localization" type="publish_pcd_map"   name="publish_pcd_map"    output="screen" /> -->
+
+    <!-- <node name="map_server" pkg="map_server" type="map_server"  args="$(find ndt_imu_localization)/map/school/map0611.yaml"/> -->
+    <node pkg="rviz"  type="rviz"  name="rviz" output="log"  args="-d $(find ndt_imu_localization)/rviz/school.rviz"></node>
+    <!-- <node pkg="rviz"  type="rviz"  name="rviz" output="log"  args="-d $(find ndt_imu_localization)/rviz/kitti.rviz"></node>  -->
+
+</launch>
